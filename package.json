@@ -1,0 +1,24 @@
+{
+  "name": "koa-partial-upload",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevevista/koa-partial-upload.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stevevista/koa-partial-upload/issues"
+  },
+  "homepage": "https://github.com/stevevista/koa-partial-upload#readme",
+  "dependencies": {
+    "koa-body": "^4.0.4",
+    "koa-compose": "^4.1.0",
+    "uuid": "^3.3.2"
+  }
+}
