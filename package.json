@@ -1,6 +1,6 @@
 {
   "name": "koa-partial-upload",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,12 +11,13 @@
     "url": "git+https://github.com/stevevista/koa-partial-upload.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/stevevista/koa-partial-upload/issues"
   },
   "homepage": "https://github.com/stevevista/koa-partial-upload#readme",
   "dependencies": {
+    "formidable": "^1.2.1",
     "koa-body": "^4.0.4",
     "koa-compose": "^4.1.0",
     "uuid": "^3.3.2"

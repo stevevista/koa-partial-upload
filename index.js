@@ -1,9 +1,73 @@
+/**
+ * koa-partial-upload - index.js
+ * Copyright(c) 2018
+ * MIT Licensed
+ *
+ * @author  R.J.
+ * @api private
+ */
 'use strict'
 const compose = require('koa-compose')
-const koaBody = require('koa-body')
 const path = require('path')
 const fs = require('fs')
 const uuid = require('uuid/v1')
+const forms = require('formidable')
+
+
+function koaBody(opts = {}) {
+  return async function (ctx, next) {
+    if (["GET", "HEAD", "DELETE"].indexOf(ctx.method.toUpperCase()) === -1) {
+      if (ctx.is('multipart')) {
+        const body = await formy(ctx, opts)
+        ctx.request.body = body.fields
+        ctx.request.files = body.files
+      }
+    }
+
+    await next()
+  }
+}
+
+function formy(ctx, opts) {
+  return new Promise(function (resolve, reject) {
+    var fields = {};
+    var files = {};
+    var form = new forms.IncomingForm(opts);
+    form.on('end', function () {
+      return resolve({
+        fields: fields,
+        files: files
+      });
+    }).on('error', function (err) {
+      return reject(err);
+    }).on('field', function (field, value) {
+      if (fields[field]) {
+        if (Array.isArray(fields[field])) {
+          fields[field].push(value);
+        } else {
+          fields[field] = [fields[field], value];
+        }
+      } else {
+        fields[field] = value;
+      }
+    }).on('file', function (field, file) {
+      if (files[field]) {
+        if (Array.isArray(files[field])) {
+          files[field].push(file);
+        } else {
+          files[field] = [files[field], file];
+        }
+      } else {
+        files[field] = file;
+      }
+    });
+    if (opts.onFileBegin) {
+      form.on('fileBegin', opts.onFileBegin);
+    }
+    form.parse(ctx.req);
+  });
+}
+
 
 async function merge (sources, dest) {
   return new Promise(async (resolve, reject) => {
@@ -24,7 +88,7 @@ async function merge (sources, dest) {
 }
 
 async function handlePartial (ctx, next) {
-  if (ctx.request.body.trunks) {
+  if (ctx.request.body.trunks && ctx.request.files) {
     const trunks = +ctx.request.body.trunks
     const fileField = Object.keys(ctx.request.files)[0]
     const file = ctx.request.files[fileField]
@@ -61,23 +125,10 @@ async function handlePartial (ctx, next) {
 }
 
 function PartialUpload(opt = {}) {
-  const koaUpload = koaBody({
-    multipart: true,
-    formidable: opt
-  })
-
-  return async function upload(ctx, next) {
-    if (!ctx.is('multipart')) {
-      // already parsed by urlencoded or json
-      await next()
-      return
-    }
-
-    await compose([
-      koaUpload,
-      handlePartial
-    ])(ctx, next)
-  }
+  return compose([
+    koaBody(opt),
+    handlePartial
+  ])
 }
 
 module.exports = PartialUpload
