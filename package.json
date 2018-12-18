@@ -18,7 +18,6 @@
   "homepage": "https://github.com/stevevista/koa-partial-upload#readme",
   "dependencies": {
     "formidable": "^1.2.1",
-    "koa-body": "^4.0.4",
     "koa-compose": "^4.1.0",
     "uuid": "^3.3.2"
   }
