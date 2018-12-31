@@ -13,6 +13,43 @@ const fs = require('fs')
 const uuid = require('uuid/v1')
 const forms = require('formidable')
 
+function stat (path) {
+  return new Promise((resolve) => {
+    fs.stat(path, (err, stats) => {
+      if (err) {
+        resolve(null)
+      } else {
+        resolve(stats)
+      }
+    })
+  })
+}
+
+function rename (oldPath, newPath) {
+  return new Promise((resolve, reject) => {
+    fs.rename(oldPath, newPath, async err => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+
+
+function unlink (path) {
+  return new Promise((resolve, reject) => {
+    fs.unlink(path, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
 
 function koaBody(opts = {}) {
   return async function (ctx, next) {
@@ -99,7 +136,7 @@ async function handlePartial (ctx, next) {
     if (!ctx.request.body.eot) {
       // don't move to dest yet
       const newpath = path.join(store_dir, `${hashname}.${trunks}`)
-      await fs.promises.rename(file.path, newpath)
+      await rename(file.path, newpath)
       file.path = newpath
       file.partial = true
     } else {
@@ -109,14 +146,16 @@ async function handlePartial (ctx, next) {
         trunkFiles.push(path.join(store_dir, `${hashname}.${i}`))
       }
       trunkFiles.push(file.path)
-      const newpath = path.join(store_dir, uuid())
+      const newpath = path.join(store_dir, uuid()) + path.extname(file.path)
       await merge(trunkFiles, newpath)
-      const stats = await fs.promises.stat(newpath)
+      const stats = await stat(newpath)
       file.path = newpath
-      file.size = stats.size
+      if (stats) {
+        file.size = stats.size
+      }
 
       for (const f of trunkFiles) {
-        await fs.promises.unlink(f)
+        await unlink(f)
       }
     }
   }
